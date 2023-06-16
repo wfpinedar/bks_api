@@ -4,7 +4,7 @@ class Book(BaseModel):
     id: int
     title: str
     subtitle: str
-    author: str
+    authors: str
     categories: str
     editor: str
     description: str

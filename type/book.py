@@ -1,5 +1,6 @@
 import typing
 import strawberry
+import sqlalchemy
 from conn.db import conn
 from models.index import books
 from strawberry.types import Info
@@ -9,7 +10,7 @@ class Book:
     id: int
     title: str
     subtitle: str
-    author: str
+    authors: str
     categories: str
     editor: str
     description: str
@@ -32,14 +33,19 @@ class Query:
     @strawberry.field
     def find_book(self, value: str) -> typing.List[Book]:
         query = books.select().where(
-            (books.c.title == value) | 
-            (books.c.subtitle == value) | 
-            (books.c.author == value) | 
-            (books.c.categories == value) | 
-            (books.c.editor == value) | 
-            (books.c.description == value) 
+            (books.c.title.contains(value)) | 
+            (books.c.subtitle.contains(value)) | 
+            (books.c.authors.contains(value)) | 
+            (books.c.categories.contains(value)) | 
+            (books.c.editor.contains(value)) | 
+            (books.c.description.contains(value)) 
             )
-        return conn.execute(query).fetchall()
+
+        result = conn.execute(query).fetchall()
+        # if not result:
+        #     result = utils.query_google_books(value)
+        # # TODO: make function for other API
+        return result
 
 @strawberry.type
 class Mutation:
@@ -47,7 +53,7 @@ class Mutation:
     async def create_book(self, 
                           title: str,
                           subtitle: str, 
-                          author: str, 
+                          authors: str, 
                           categories: str, 
                           editor: str, 
                           description: str, 
@@ -56,7 +62,7 @@ class Mutation:
         book =  {
             "title": title,
             "subtitle": subtitle,
-            "author": author,
+            "authors": authors,
             "categories": categories,
             "editor": editor,
             "description": description,
@@ -71,7 +77,7 @@ class Mutation:
                     id: int,
                     title: str,
                     subtitle: str, 
-                    author: str, 
+                    authors: str, 
                     categories: str, 
                     editor: str, 
                     description: str, 
@@ -80,7 +86,7 @@ class Mutation:
         result = conn.execute(books.update().where(books.c.id == id), {
             "title": title,
             "subtitle": subtitle,
-            "author": author,
+            "authors": authors,
             "categories": categories,
             "editor": editor,
             "description": description,
