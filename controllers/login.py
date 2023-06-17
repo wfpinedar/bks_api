@@ -23,4 +23,4 @@ def verify_token(Authorization: str = Header(None)):
         return validate_token(token, output=True)
     else:
         return JSONResponse(content={"message": "Forbidden"}, 
-                            status_code=403)        
+                            status_code=403)      
