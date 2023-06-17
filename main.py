@@ -1,8 +1,8 @@
 from fastapi import FastAPI
-from controllers.main import book
+from dotenv import load_dotenv
+from controllers.main import route, book
 app = FastAPI()
+load_dotenv()
 
+app.include_router(route)
 app.include_router(book)
-
-
-# app.add_websocket_route("/graphql", graphql_app)

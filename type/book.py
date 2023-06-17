@@ -4,6 +4,7 @@ import sqlalchemy
 from conn.db import conn
 from models.index import books
 from strawberry.types import Info
+from utils.utils import query_google_books
 
 @strawberry.type
 class Book:
@@ -42,9 +43,9 @@ class Query:
             )
 
         result = conn.execute(query).fetchall()
-        # if not result:
-        #     result = utils.query_google_books(value)
-        # # TODO: make function for other API
+        if not result:
+            Mutation().define_book(**query_google_books(value)[0])
+        # TODO: make function for other API
         return result
 
 @strawberry.type
@@ -59,6 +60,28 @@ class Mutation:
                           description: str, 
                           image: str, 
                           info: Info) -> int:
+        book =  {
+            "title": title,
+            "subtitle": subtitle,
+            "authors": authors,
+            "categories": categories,
+            "editor": editor,
+            "description": description,
+            "image": image 
+        } 
+        result = conn.execute(books.insert(),book)
+        conn.commit()
+        return int(result.inserted_primary_key[0])
+    
+    @strawberry.mutation
+    def define_book(self, 
+                    title: str,
+                    subtitle: str, 
+                    authors: str, 
+                    categories: str, 
+                    editor: str, 
+                    description: str, 
+                    image: str) -> int:
         book =  {
             "title": title,
             "subtitle": subtitle,
